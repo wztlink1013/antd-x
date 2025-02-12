@@ -7,7 +7,6 @@ import React from 'react';
 import useProxyImperativeHandle from '../_util/hooks/use-proxy-imperative-handle';
 import useXComponentConfig from '../_util/hooks/use-x-component-config';
 import { useXProviderContext } from '../x-provider';
-import SenderGrid from './SenderGrid';
 import SenderHeader, { SendHeaderContext } from './SenderHeader';
 import { ActionButtonContext } from './components/ActionButton';
 import ClearButton from './components/ClearButton';
@@ -55,6 +54,7 @@ export interface SenderProps extends Pick<TextareaProps, 'placeholder' | 'onKeyP
   onKeyDown?: React.KeyboardEventHandler<any>;
   onPaste?: React.ClipboardEventHandler<HTMLElement>;
   onPasteFile?: (file: File) => void;
+  layoutType?: 'grid';
   components?: SenderComponents;
   styles?: {
     prefix?: React.CSSProperties;
@@ -113,6 +113,7 @@ const ForwardSender = React.forwardRef<SenderRef, SenderProps>((props, ref) => {
     header,
     onPaste,
     onPasteFile,
+    layoutType = 'grid',
     ...rest
   } = props;
 
@@ -251,7 +252,6 @@ const ForwardSender = React.forwardRef<SenderRef, SenderProps>((props, ref) => {
     if (e.target !== containerRef.current?.querySelector(`.${inputCls}`)) {
       e.preventDefault();
     }
-
     inputRef.current?.focus();
   };
 
@@ -285,27 +285,20 @@ const ForwardSender = React.forwardRef<SenderRef, SenderProps>((props, ref) => {
         <SendHeaderContext.Provider value={{ prefixCls }}>{header}</SendHeaderContext.Provider>
       )}
 
-      <div className={`${prefixCls}-content`} onMouseDown={onContentMouseDown}>
-        {/* Prefix */}
-        {prefix && (
-          <div
-            className={classnames(
-              `${prefixCls}-prefix`,
-              contextConfig.classNames.prefix,
-              classNames.prefix,
-            )}
-            style={{ ...contextConfig.styles.prefix, ...styles.prefix }}
-          >
-            {prefix}
-          </div>
-        )}
-
-        {/* Input */}
+      <div
+        className={`${prefixCls}-content ${prefixCls}-content-${layoutType}`}
+        onMouseDown={onContentMouseDown}
+      >
         <InputTextArea
           {...inputProps}
           disabled={disabled}
           style={{ ...contextConfig.styles.input, ...styles.input }}
-          className={classnames(inputCls, contextConfig.classNames.input, classNames.input)}
+          className={classnames(
+            inputCls,
+            `${prefixCls}-input-${layoutType}`,
+            contextConfig.classNames.input,
+            classNames.input,
+          )}
           autoSize={{ maxRows: 8 }}
           value={innerValue}
           onChange={(event) => {
@@ -323,33 +316,47 @@ const ForwardSender = React.forwardRef<SenderRef, SenderProps>((props, ref) => {
           variant="borderless"
           readOnly={readOnly}
         />
-
-        {/* Action List */}
-        <div
-          className={classnames(
-            actionListCls,
-            contextConfig.classNames.actions,
-            classNames.actions,
-          )}
-          style={{ ...contextConfig.styles.actions, ...styles.actions }}
-        >
-          <ActionButtonContext.Provider
-            value={{
-              prefixCls: actionBtnCls,
-              onSend: triggerSend,
-              onSendDisabled: !innerValue,
-              onClear: triggerClear,
-              onClearDisabled: !innerValue,
-              onCancel,
-              onCancelDisabled: !loading,
-              onSpeech: () => triggerSpeech(false),
-              onSpeechDisabled: !speechPermission,
-              speechRecording,
-              disabled,
-            }}
+        <div className={`${prefixCls}-content-grid-box`}>
+          <div>
+            {prefix && (
+              <div
+                className={classnames(
+                  `${prefixCls}-prefix`,
+                  contextConfig.classNames.prefix,
+                  classNames.prefix,
+                )}
+                style={{ ...contextConfig.styles.prefix, ...styles.prefix }}
+              >
+                {prefix}
+              </div>
+            )}
+          </div>
+          <div
+            className={classnames(
+              actionListCls,
+              contextConfig.classNames.actions,
+              classNames.actions,
+            )}
+            style={{ ...contextConfig.styles.actions, ...styles.actions }}
           >
-            {actionNode}
-          </ActionButtonContext.Provider>
+            <ActionButtonContext.Provider
+              value={{
+                prefixCls: actionBtnCls,
+                onSend: triggerSend,
+                onSendDisabled: !innerValue,
+                onClear: triggerClear,
+                onClearDisabled: !innerValue,
+                onCancel,
+                onCancelDisabled: !loading,
+                onSpeech: () => triggerSpeech(false),
+                onSpeechDisabled: !speechPermission,
+                speechRecording,
+                disabled,
+              }}
+            >
+              {actionNode}
+            </ActionButtonContext.Provider>
+          </div>
         </div>
       </div>
     </div>,
@@ -358,7 +365,6 @@ const ForwardSender = React.forwardRef<SenderRef, SenderProps>((props, ref) => {
 
 type CompoundedSender = typeof ForwardSender & {
   Header: typeof SenderHeader;
-  Grid: typeof SenderGrid;
 };
 
 const Sender = ForwardSender as CompoundedSender;
@@ -368,6 +374,5 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 Sender.Header = SenderHeader;
-Sender.Grid = SenderGrid;
 
 export default Sender;
