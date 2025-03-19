@@ -46,6 +46,7 @@ export interface AttachmentsProps extends Omit<UploadProps, 'fileList'> {
   // ============== File List ==============
   items?: Attachment[];
   overflow?: FileListProps['overflow'];
+  imageProps?: FileListProps['imageProps'];
 }
 
 export interface AttachmentsRef {
@@ -65,7 +66,9 @@ function Attachments(props: AttachmentsProps, ref: React.Ref<AttachmentsRef>) {
     getDropContainer,
     placeholder,
     onChange,
+    onRemove,
     overflow,
+    imageProps,
     disabled,
     classNames = {},
     styles = {},
@@ -124,14 +127,20 @@ function Attachments(props: AttachmentsProps, ref: React.Ref<AttachmentsRef>) {
     onChange: triggerChange,
   };
 
-  const onItemRemove = (item: Attachment) => {
-    const newFileList = fileList.filter((fileItem) => fileItem.uid !== item.uid);
-    triggerChange({
-      file: item,
-      fileList: newFileList,
-    });
-  };
+  const onItemRemove = (item: Attachment) =>
+    Promise.resolve(typeof onRemove === 'function' ? onRemove(item) : onRemove).then((ret) => {
+      // Prevent removing file
+      if (ret === false) {
+        return;
+      }
 
+      const newFileList = fileList.filter((fileItem) => fileItem.uid !== item.uid);
+
+      triggerChange({
+        file: { ...item, status: 'removed' },
+        fileList: newFileList,
+      });
+    });
   // ============================ Render ============================
   let renderChildren: React.ReactElement;
 
@@ -211,6 +220,7 @@ function Attachments(props: AttachmentsProps, ref: React.Ref<AttachmentsRef>) {
             ...contextStyles.item,
             ...styles.item,
           }}
+          imageProps={imageProps}
         />
         {getPlaceholderNode('inline', hasFileList ? { style: { display: 'none' } } : {}, uploadRef)}
         <DropArea
