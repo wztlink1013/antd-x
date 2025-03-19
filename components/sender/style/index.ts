@@ -80,6 +80,20 @@ const genSenderStyle: GenerateStyle<SenderToken> = (token) => {
         boxSizing: 'border-box',
         alignItems: 'flex-end',
       },
+      [`${componentCls}-content-grid`]: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
+        width: '100%',
+        height: 'auto',
+      },
+      [`${componentCls}-content-grid-box`]: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+      },
 
       // ============================ Prefix =============================
       [`${componentCls}-prefix`]: {
@@ -93,6 +107,9 @@ const genSenderStyle: GenerateStyle<SenderToken> = (token) => {
         flex: 'auto',
         alignSelf: 'center',
         minHeight: 'auto',
+      },
+      [`${componentCls}-input-grid`]: {
+        width: '100%',
       },
 
       // ============================ Actions ============================
