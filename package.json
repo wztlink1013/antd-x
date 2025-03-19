@@ -1,5 +1,6 @@
 {
-  "name": "antd-x",
+  "name": "@wztlink1013/antd-x",
+  "private": false,
   "version": "1.0.6",
   "description": "Craft AI-driven interfaces effortlessly",
   "keywords": [
